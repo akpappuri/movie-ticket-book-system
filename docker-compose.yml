@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  eureka-server:
+    build: ./movie-services-registry
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - serve_port=8761
+      - spring_eureka_server_name=movie-services-registry
+      - eureka_client_register_with_eureka=false
+      - eureka_client_fetch_registry=false
+
+  booking-service:
+    build: ./booking-service
+    container_name: booking-service
+    ports:
+      - "8081:8081"
+    environment:
+      - server_port=8081
+      - APPLICATION_NAME=booking-service
+      - EUREKA_CLIENT_REGISTRATION=true
+      - eureka_client_serviceUrl_defaultZone=http://eureka-server:8761/eureka/
+      - eureka_client_fetch_registry=true
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "9091:9091"
+    environment:
+      - server_port:=9090
+      - APPLICATION_NAME=payment-service
+      - EUREKA_CLIENT_REGISTRATION=true
+      - eureka_client_serviceUrl_defaultZone=http://eureka-server:8761/eureka/
+      - eureka_client_fetch_registry=false
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "7070:7070"
+    environment:
+      - server_port:=7070
+      - APPLICATION_NAME=notification-service
+      - EUREKA_CLIENT_REGISTRATION=true
+      - eureka_client_serviceUrl_defaultZone=http://eureka-server:8761/eureka/
+      - eureka_client_fetch_registry=false
