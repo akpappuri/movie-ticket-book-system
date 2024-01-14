@@ -5,6 +5,12 @@ services:
     container_name: eureka-server
     ports:
       - "8761:8761"
+#    healthcheck:
+#      test: "curl --fail --silent localhost:8761/actuator/health/readiness | grep UP || exit 0"
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
     environment:
       - serve_port=8761
       - spring_eureka_server_name=movie-services-registry
@@ -16,6 +22,9 @@ services:
     container_name: booking-service
     ports:
       - "8081:8081"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
     environment:
       - server_port=8081
       - APPLICATION_NAME=booking-service
@@ -28,30 +37,36 @@ services:
     container_name: payment-service
     ports:
       - "9091:9091"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
     environment:
-      - server_port=9090
+      - server_port=9091
       - APPLICATION_NAME=payment-service
       - EUREKA_CLIENT_REGISTRATION=true
       - eureka_client_serviceUrl_defaultZone=http://eureka-server:8761/eureka/
       - eureka_client_fetch_registry=false
 
-  notification-service:
-    build: ./notification-service
-    container_name: notification-service
-    ports:
-      - "7070:7070"
-    environment:
-      - server_port=7070
-      - APPLICATION_NAME=notification-service
-      - EUREKA_CLIENT_REGISTRATION=true
-      - eureka_client_serviceUrl_defaultZone=http://eureka-server:8761/eureka/
-      - eureka_client_fetch_registry=false
+#  notification-service:
+#    build: ./notification-service
+#    container_name: notification-service
+#    ports:
+#      - "7070:7070"
+#    environment:
+#      - server_port=7070
+#      - APPLICATION_NAME=notification-service
+#      - EUREKA_CLIENT_REGISTRATION=true
+#      - eureka_client_serviceUrl_defaultZone=http://eureka-server:8761/eureka/
+#      - eureka_client_fetch_registry=false
 
   api-gateway:
     build: ./api-gateway
     ports:
       - "8766:8766"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
     environment:
       - API_GATEWAY_PORT=8766
       - REGISTER_GATEWAY_WITH_EUREKA=true
-      - eureka_client_serviceUrl_defaultZone=http://localhost:8761/eureka/
+      - eureka_client_serviceUrl_defaultZone=http://eureka-server:8761/eureka/
